@@ -141,7 +141,7 @@ public class PLEBIndex<T> implements Serializable {
   public KBest<T> kbest (T key, int k, int B, int P) {
     KBest<T> kbest = new KBest(k,true,false);
     int index;
-
+    
     if (! keyIDmap.containsKey(key))
       return kbest;
 
@@ -154,12 +154,13 @@ public class PLEBIndex<T> implements Serializable {
       index = Arrays.binarySearch(sorts[column], keyID, comparator);
       // This shouldn't happen as key should already be in sorts, it
       // should be an exact match, but just in case...
-      if (index < 0)
+      if (index < 0) {
         index = (-index) + 1;
+      }
 
       // Now search across the given beam width
       for (int j = Math.max(0,index-(B/2));
-           j < Math.min(sorts[column].length,index+(B/2));
+           j < Math.min(sorts[column].length,index+(B/2)+1);
            j++) {
         candBytes = signatures[sorts[column][j]].bytes;
         score = SLSH.approximateCosine(candBytes, keyBytes);
