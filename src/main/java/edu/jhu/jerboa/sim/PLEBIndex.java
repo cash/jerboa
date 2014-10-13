@@ -65,11 +65,11 @@ public class PLEBIndex<T> implements Serializable {
 
 
   @SuppressWarnings({"unchecked"})
-    /**
-       calls initialize(T[], Signature[] int) if removeKeys is true, then wipes
-       the (key,value) pairs from table as being read into arrays.
-    */
-    public void initialize (Hashtable<T,Signature> table, int P, boolean removeKeys) throws Exception {
+  /**
+     calls initialize(T[], Signature[] int) if removeKeys is true, then wipes
+     the (key,value) pairs from table as being read into arrays.
+  */
+  public void initialize (Hashtable<T,Signature> table, int P, boolean removeKeys) throws Exception {
     // Set comparator
     String comparatorName = JerboaProperties.getString("PLEBIndex.comparator", "LexGreater").toLowerCase();
     if (comparatorName.equals("lexgreater")) {
