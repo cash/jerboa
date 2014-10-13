@@ -73,12 +73,12 @@ public class PLEBIndex<T> implements Serializable {
     // Set comparator
     String comparatorName = JerboaProperties.getString("PLEBIndex.comparator", "LexGreater").toLowerCase();
     if (comparatorName.equals("lexgreater")) {
-	    comparator = this.LexGreater;
+      comparator = this.LexGreater;
     } else if (comparatorName.equals("graygreater")) {
-	    comparator = this.GrayGreater;
+      comparator = this.GrayGreater;
     } else {
-	    logger.warning("Unknown comparator type [" + comparatorName +"], defaulting to LexGreater");
-	    comparator = this.LexGreater;
+      logger.warning("Unknown comparator type [" + comparatorName +"], defaulting to LexGreater");
+      comparator = this.LexGreater;
     }
 
     // Initialize keys
@@ -90,11 +90,11 @@ public class PLEBIndex<T> implements Serializable {
     e = table.keys();
     int i = 0;
     while (e.hasMoreElements()) {
-	    keys[i] = (T) e.nextElement();
-	    signatures[i] = table.get(keys[i]);
-	    if (removeKeys)
+      keys[i] = (T) e.nextElement();
+      signatures[i] = table.get(keys[i]);
+      if (removeKeys)
         table.remove(keys[i]);
-	    i++;
+      i++;
     }
     initialize(keys,signatures,P);
   }
@@ -119,18 +119,18 @@ public class PLEBIndex<T> implements Serializable {
     this.keys = keys;
 
     initializePermute(P, signatures[0].bytes.length);
-	
+  
     keyIDmap = new Hashtable<T,Integer>();
     for (int i = 0; i < keys.length; i++)
-	    keyIDmap.put(keys[i],i);
+      keyIDmap.put(keys[i],i);
 
     sorts = new Integer[P][];
     for (int i = 0; i < P; i++) {
-	    sorts[i] = new Integer[signatures.length];
-	    for (int j = 0; j < sorts[i].length; j++)
+      sorts[i] = new Integer[signatures.length];
+      for (int j = 0; j < sorts[i].length; j++)
         sorts[i][j] = j;
-	    column = i;
-	    Arrays.sort(sorts[i], 0, sorts[i].length, comparator);
+      column = i;
+      Arrays.sort(sorts[i], 0, sorts[i].length, comparator);
     }
   }
 
@@ -143,22 +143,22 @@ public class PLEBIndex<T> implements Serializable {
     int index;
 
     if (! keyIDmap.containsKey(key))
-	    return kbest;
+      return kbest;
 
     int keyID = keyIDmap.get(key);
     byte[] keyBytes = signatures[keyID].bytes;
     double score;
     byte[] candBytes;
     for (int p = 0; p < Math.min(permute.length,P); p++) {
-	    column = p;
-	    index = Arrays.binarySearch(sorts[column], keyID, comparator);
-	    // This shouldn't happen as key should already be in sorts, it
-	    // should be an exact match, but just in case...
-	    if (index < 0)
+      column = p;
+      index = Arrays.binarySearch(sorts[column], keyID, comparator);
+      // This shouldn't happen as key should already be in sorts, it
+      // should be an exact match, but just in case...
+      if (index < 0)
         index = (-index) + 1;
 
-	    // Now search across the given beam width
-	    for (int j = Math.max(0,index-(B/2));
+      // Now search across the given beam width
+      for (int j = Math.max(0,index-(B/2));
            j < Math.min(sorts[column].length,index+(B/2));
            j++) {
         candBytes = signatures[sorts[column][j]].bytes;
@@ -168,7 +168,7 @@ public class PLEBIndex<T> implements Serializable {
         //Signature.toString(candBytes,2) + "\t" + 
         //column + "\t" + j + "\t" +
         //keys[sorts[column][j]] + "\t" + score);
-	    }
+      }
     }
 
     return kbest;
@@ -273,33 +273,33 @@ public class PLEBIndex<T> implements Serializable {
   static final Comparator<Integer> LexGreater =
     new Comparator<Integer>() {
     public int compare(Integer x, Integer y) {
-	    byte[] xBytes = signatures[x].bytes;
-	    byte[] yBytes = signatures[y].bytes;
-	    for (int b = 0; b < xBytes.length; b++) {
+      byte[] xBytes = signatures[x].bytes;
+      byte[] yBytes = signatures[y].bytes;
+      for (int b = 0; b < xBytes.length; b++) {
         if (lexRank[xBytes[permute[column][b]]+128] < 
             lexRank[yBytes[permute[column][b]]+128])
           return 1;
         else if (lexRank[xBytes[permute[column][b]]+128] >
                  lexRank[yBytes[permute[column][b]]+128])
           return -1;
-	    }
-	    return 0;
+      }
+      return 0;
     }
   };
 
   static final Comparator<Integer> GrayGreater =
     new Comparator<Integer>() {
     public int compare(Integer x, Integer y) {
-	    byte[] xBytes = signatures[x].bytes;
-	    byte[] yBytes = signatures[y].bytes;
-	    int ix = 0; // int version of a given byte from xBytes
-	    int iy = 0;
-	    int pix = 0; // previous int version of ix, under current permute
-	    int piy = 0;
-	    int gx; // ordering under gray interpretation of xBytes
-	    int gy;
-	    int[] p = permute[column];
-	    for (int b = 0; b < xBytes.length; b++) {
+      byte[] xBytes = signatures[x].bytes;
+      byte[] yBytes = signatures[y].bytes;
+      int ix = 0; // int version of a given byte from xBytes
+      int iy = 0;
+      int pix = 0; // previous int version of ix, under current permute
+      int piy = 0;
+      int gx; // ordering under gray interpretation of xBytes
+      int gy;
+      int[] p = permute[column];
+      for (int b = 0; b < xBytes.length; b++) {
         if (b > 0) { pix = ix; piy = iy; }
         ix = xBytes[p[b]];
         iy = yBytes[p[b]];
@@ -317,34 +317,34 @@ public class PLEBIndex<T> implements Serializable {
           return 1;
         else if (gx > gy)
           return -1;
-	    }
-	    return 0;
+      }
+      return 0;
     }
   };
 
 
   // static final Comparator<Integer> GrayGreater =
-  // 	new Comparator<Integer>() {
-  // 	public int compare(Integer x, Integer y) {
-  // 	    byte[] xBytes = Gray.getGrayCode(signatures[x].bytes,permute[column]);
-  // 	    byte[] yBytes = Gray.getGrayCode(signatures[y].bytes,permute[column]);
-  // 	    for (int b = 0; b < xBytes.length; b++) {
-  // 		if (xBytes[b] != yBytes[b]) { // skip byte if equal
-  // 		    if (xBytes[b] >= 0) {
-  // 			if ((yBytes[b] > 0) && (xBytes[b] > yBytes[b]))
-  // 			    return 1;
-  // 			else
-  // 			    return -1;
-  // 		    } else {
-  // 			if ((yBytes[b] >= 0) || (xBytes[b] > yBytes[b]))
-  // 			    return 1;
-  // 			else
-  // 			    return -1;
-  // 		    }
-  // 		}
-  // 	    }
-  // 	    return 0;
-  // 	}
+  //   new Comparator<Integer>() {
+  //   public int compare(Integer x, Integer y) {
+  //     byte[] xBytes = Gray.getGrayCode(signatures[x].bytes,permute[column]);
+  //     byte[] yBytes = Gray.getGrayCode(signatures[y].bytes,permute[column]);
+  //     for (int b = 0; b < xBytes.length; b++) {
+  //     if (xBytes[b] != yBytes[b]) { // skip byte if equal
+  //       if (xBytes[b] >= 0) {
+  //         if ((yBytes[b] > 0) && (xBytes[b] > yBytes[b]))
+  //           return 1;
+  //         else
+  //           return -1;
+  //         } else {
+  //           if ((yBytes[b] >= 0) || (xBytes[b] > yBytes[b]))
+  //             return 1;
+  //           else
+  //             return -1;
+  //         }
+  //       }
+  //     }
+  //     return 0;
+  //   }
   // };
 
 
@@ -362,21 +362,21 @@ public class PLEBIndex<T> implements Serializable {
     int n = permute[0].length;
 
     for (int i = 0; i < numBytes; i++)
-	    permute[0][i] = i;
+      permute[0][i] = i;
 
     for (int p = 1; p < P; p++) {
-	    for (int i = 0; i < numBytes; i++)
+      for (int i = 0; i < numBytes; i++)
         permute[p][i] = permute[p-1][i];
 
-	    // reverse
-	    for (int i = 0; i < n/2; i++) {
+      // reverse
+      for (int i = 0; i < n/2; i++) {
         tmp = permute[p][i];
         permute[p][i] = permute[p][n-1-i];
         permute[p][n-1-i] = tmp;
-	    }
+      }
 
-	    // if first item is not odd
-	    if (permute[p][0] % 2 != 1) {
+      // if first item is not odd
+      if (permute[p][0] % 2 != 1) {
         // then  double permute[p]
         for (int i = 0; i < permute[p].length; i+= 2) {
           tmp = permute[p][i];
@@ -391,12 +391,12 @@ public class PLEBIndex<T> implements Serializable {
         tmp = permute[p][0];
         permute[p][0] = permute[p][permute[p].length-1];
         permute[p][permute[p].length-1] = tmp;
-	    }
+      }
     }
     // for (int p = 0; p < P; p++) {
-    //     for (int i = 0; i < n; i++)
-    // 	System.out.print(permute[p][i] + " ");
-    //     System.out.println();
+    //   for (int i = 0; i < n; i++)
+    //     System.out.print(permute[p][i] + " ");
+    //   System.out.println();
     // }
   }
 
@@ -416,9 +416,9 @@ public class PLEBIndex<T> implements Serializable {
     e = keyIDmap.keys();
     T key;
     while (e.hasMoreElements()) {
-	    key = (T) e.nextElement();
-	    keys[keyIDmap.get(key)] = key;
-	    signatures[keyIDmap.get(key)] = slsh.signatures.get(key);
+      key = (T) e.nextElement();
+      keys[keyIDmap.get(key)] = key;
+      signatures[keyIDmap.get(key)] = slsh.signatures.get(key);
     }
   }
 
@@ -452,7 +452,7 @@ public class PLEBIndex<T> implements Serializable {
     DecimalFormat formatter = new DecimalFormat("#.####");
     // SimpleImmutableEntry<String,Double>[] best = pleb.kbest("the dog",10,10,4).toArray();
     // for (SimpleImmutableEntry<String,Double> pair : best)
-	  //   System.out.println(pair.getKey() + "\t" + formatter.format(pair.getValue()));
+    //   System.out.println(pair.getKey() + "\t" + formatter.format(pair.getValue()));
 
     String outputFilename = JerboaProperties.getString("PLEBIndex.indexFile");
     pleb.logger.info("Writing output [" + outputFilename + "]");
