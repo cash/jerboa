@@ -41,8 +41,11 @@ public class NearDuplicates {
   public Hashtable<String,LinkedList<String>> findDuplicates (double cosineThreshold, int maxCandidates) throws Exception {
     Hashtable<String,LinkedList<String>> duplicates = new Hashtable<String,LinkedList<String>>();
     PLEBIndex<String> pleb = new PLEBIndex<String>();
-    int beamWidth = maxCandidates;
     int numSorts = JerboaProperties.getInt("PLEBIndex.P",4);
+    // beamWidth calculations in PLEB use integer division
+    int beamWidth = 2 * (int)Math.ceil(maxCandidates / 2.0);
+    // PLEB always includes self with the matches so we ask for an additional match
+    maxCandidates++;
     
     pleb.initialize(slsh.signatures, numSorts, true);
     
