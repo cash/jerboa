@@ -9,6 +9,7 @@ package edu.jhu.jerboa.sim;
 import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
+import edu.jhu.jerboa.processing.Shingler;
 import edu.jhu.jerboa.util.*;
 
 import java.io.BufferedReader;
@@ -18,6 +19,13 @@ import java.util.logging.Logger;
    @author Benjamin Van Durme
 
    Near duplicate detection via LSH
+   
+   Depends on Jerboa properties:
+     * PLEBIndex.P
+     * PLEBIndex.comparator
+     * SLSH.numBits
+     * SLSH.poolSize
+     * SLSH.seed
 */
 public class NearDuplicates {
   private static final Logger logger = Logger.getLogger(NearDuplicates.class.getName());
@@ -28,10 +36,10 @@ public class NearDuplicates {
   }
 
   /**
-     Builds a signature based on content
+     Builds a signature based on features
   */
-  public void add (String key, Iterator<String> content) {
-    slsh.update(key,content);
+  public void add (String key, Iterator<String> features) {
+    slsh.update(key,features);
     slsh.buildSignature(key,true);
   }
 
@@ -49,7 +57,7 @@ public class NearDuplicates {
     
     pleb.initialize(slsh.signatures, numSorts, true);
     
-    for (String key : pleb.keys) {      
+    for (String key : pleb.keys) {
       KBest<String> best = pleb.kbest(key, maxCandidates, beamWidth, numSorts);
       LinkedList<String> matches = new LinkedList<String>();
       for (SimpleImmutableEntry<String,Double> dupe : best.toArray()) {
@@ -62,7 +70,7 @@ public class NearDuplicates {
 
     return duplicates;
   }
-
+  
   /**
      Reads in a file containing one document per line, assigning the key to be
      the line number, prints out the duplicates.
@@ -75,11 +83,13 @@ public class NearDuplicates {
     double cosineThreshold = Double.parseDouble(args[1]);
     int maxCandidates = Integer.parseInt(args[2]);
     BufferedReader reader = FileManager.getReader(args[0]);
-    String line;
+    
     NearDuplicates nd = new NearDuplicates();
+    
     int lineNumber = 0;
+    String line;
     while ((line = reader.readLine()) != null) {
-      nd.add("" + lineNumber, Arrays.asList(line.split("\\s+")).iterator());
+      nd.add("" + lineNumber, new Shingler(line.split("\\s+")));
       lineNumber++;
     }
     reader.close();
