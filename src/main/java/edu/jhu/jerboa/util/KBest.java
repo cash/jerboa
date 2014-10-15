@@ -39,20 +39,11 @@ public class KBest<T> {
     this.max = max;
 
     if (!allowDuplicates)
-      contents = new Hashtable();
+      contents = new Hashtable<T,Boolean>();
   }
 
   public KBest (int k, boolean max) {
-    if (max)
-      heap = new PriorityQueue<SimpleImmutableEntry<T,Double>>(k,Greater);
-    else
-      heap = new PriorityQueue<SimpleImmutableEntry<T,Double>>(k,Lesser);
-
-    this.k = k;
-    this.max = max;
-
-    if (!allowDuplicates)
-      contents = new Hashtable();
+    this(k, max, true);
   }
 
   final Comparator<SimpleImmutableEntry<T,Double>> Lesser =
