@@ -42,6 +42,16 @@ public class NearDuplicates {
     slsh.update(key,features);
     slsh.buildSignature(key,true);
   }
+  
+  /**
+    Builds a signature based on document
+    
+    Uses bigram shingling 
+  */
+  public void add (String key, String documentText) {
+    slsh.update(key,new Shingler(documentText.split("\\s+")));
+    slsh.buildSignature(key,true);
+  }
 
   /**
     Finds duplicates for each member of the signatures added
