@@ -58,4 +58,8 @@
     </snapshotRepository>
   </distributionManagement>
 
+  <scm>
+    <connection>scm:git:https://gitlab.hltcoe.jhu.edu/littleowl/jerboa.git</connection>
+  </scm>
+
 </project>
