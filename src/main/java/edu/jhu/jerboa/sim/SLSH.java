@@ -256,12 +256,13 @@ public class SLSH implements IFeatureContainer, ISimilarity {
         return;
       signatures.put(key, new Signature());
     }
+    sig = signatures.get(key);
+    if (sig.sums == null)
+      sig.sums = new float[numBits];
+    
     String feature;
     while (features.hasNext()) {
-      sig = signatures.get(key);
       sig.strength++;
-      if (sig.sums == null)
-        sig.sums = new float[numBits];
       feature = features.next();
       for (int i = 0; i < numBits; i++)
         sig.sums[i] += pool[Hash.hash(feature,salts[i],pool.length)];
