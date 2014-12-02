@@ -56,8 +56,9 @@ public class NearDuplicates {
   /**
     Finds duplicates for each member of the signatures added
   */
-  public Hashtable<String,LinkedList<String>> findDuplicates (double cosineThreshold, int maxCandidates) throws Exception {
-    Hashtable<String,LinkedList<String>> duplicates = new Hashtable<String,LinkedList<String>>();
+  public Hashtable<String,LinkedList<Map.Entry<String,Double>>> findDuplicates (double cosineThreshold, int maxCandidates) throws Exception {
+    Hashtable<String,LinkedList<Map.Entry<String,Double>>> duplicates = 
+    		new Hashtable<String,LinkedList<Map.Entry<String,Double>>>();
     PLEBIndex<String> pleb = new PLEBIndex<String>();
     int numSorts = JerboaProperties.getInt("PLEBIndex.P",4);
     // beamWidth calculations in PLEB use integer division
@@ -69,10 +70,11 @@ public class NearDuplicates {
     
     for (String key : pleb.keys) {
       KBest<String> best = pleb.kbest(key, maxCandidates, beamWidth, numSorts);
-      LinkedList<String> matches = new LinkedList<String>();
+      LinkedList<Map.Entry<String,Double>> matches = 
+    		  new LinkedList<Map.Entry<String,Double>>();
       for (SimpleImmutableEntry<String,Double> dupe : best.toArray()) {
         if (!dupe.getKey().equals(key) && dupe.getValue() > cosineThreshold) {
-          matches.add(dupe.getKey());
+          matches.add(dupe);
         }
       }
       duplicates.put(key, matches);
@@ -104,12 +106,13 @@ public class NearDuplicates {
     }
     reader.close();
 
-    Hashtable<String,LinkedList<String>> duplicates = nd.findDuplicates(cosineThreshold, maxCandidates);
+    Hashtable<String,LinkedList<Map.Entry<String,Double>>> duplicates = 
+    		nd.findDuplicates(cosineThreshold, maxCandidates);
 
-    for (Map.Entry<String,LinkedList<String>> entry : duplicates.entrySet()) {
+    for (Map.Entry<String,LinkedList<Map.Entry<String,Double>>> entry : duplicates.entrySet()) {
       System.out.print(entry.getKey() + "\t");
-      for (String match : entry.getValue()) {
-        System.out.print(match + ",");
+      for (Map.Entry<String,Double> match : entry.getValue()) {
+        System.out.print(match.getKey() + ",");
       }
       System.out.println();
     }
