@@ -2,7 +2,7 @@
 // This software is released under the 2-clause BSD license.
 // See jerboa/LICENSE, or http://cs.jhu.edu/~vandurme/jerboa/LICENSE
 
-// 	Benjamin Van Durme, vandurme@cs.jhu.edu,  7 May 2010
+//   Benjamin Van Durme, vandurme@cs.jhu.edu,  7 May 2010
 
 package edu.jhu.jerboa.counting;
 
@@ -56,19 +56,19 @@ public class TOMB implements ICounterContainer {
     // It must be that w * h < Integer.MAX_VALUE, otherwise the BitSet
     // complains about negative int values at initialization time.
     if (width * height > Integer.MAX_VALUE)
-	    throw new Exception("width * height > Integer.MAX_VALUE " + (width*height) + " > " + Integer.MAX_VALUE);
+      throw new Exception("width * height > Integer.MAX_VALUE " + (width*height) + " > " + Integer.MAX_VALUE);
 
 
     // We're only going to represent up to Integer.MAX_VALUE max freq.
     // Here we possibly lower the value of d, in order that we don't
     // build a codebook larger than required.
-    int maxStatesNeeded = 
-	    (int) Math.floor(Math.log((double)Integer.MAX_VALUE)/Math.log(base));
+    int maxStatesNeeded =
+      (int) Math.floor(Math.log((double)Integer.MAX_VALUE)/Math.log(base));
     int perCell = ((int)Math.pow(2,height))-1;
     if (depth * perCell > maxStatesNeeded)
-	    this.depth = (int) Math.floor(maxStatesNeeded / perCell);
+      this.depth = (int) Math.floor(maxStatesNeeded / perCell);
     else
-	    this.depth = depth;
+      this.depth = depth;
 
     numSeen = 0;
     this.base = base;
@@ -81,11 +81,11 @@ public class TOMB implements ICounterContainer {
     invertedCodebook[0] = 1;
     int i = 0;
     for (int j = 1; i < codebook.length-1; j++) {
-	    if (((int)Math.pow(base,j)) > ((int)Math.pow(base,codebook[i]))) {
+      if (((int)Math.pow(base,j)) > ((int)Math.pow(base,codebook[i]))) {
         i++;
         codebook[i] = j;
         invertedCodebook[i] = (int)Math.pow(base,j);
-	    }
+      }
     }
     salts = Hash.generateSalts(codebook.length);
     random = new Random();
@@ -104,7 +104,7 @@ public class TOMB implements ICounterContainer {
     out.writeObject(invertedCodebook);
     out.writeObject(random);
   }
-    
+
   private void readObject(ObjectInputStream in)
     throws IOException, ClassNotFoundException {
     salts = (int[]) in.readObject();
@@ -140,8 +140,8 @@ public class TOMB implements ICounterContainer {
    */
   public boolean set(String key, int value) {
     if (value <= 0)
-	    return false; // for compat
-	
+      return false; // for compat
+
     int d = 0;
     int address = 0;
     int i;
@@ -153,12 +153,12 @@ public class TOMB implements ICounterContainer {
          tally++) {}
 
     while ((d < depth) && (tally > 0)) {
-	    //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
-	    address = ((int)(Hash.hash(key,salts[d], width* height)));
-	    if (tally >= (Math.pow(2,height)-1)) {
+      //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
+      address = ((int)(Hash.hash(key,salts[d], width* height)));
+      if (tally >= (Math.pow(2,height)-1)) {
         memory.set(address, address + height);
         tally = tally - (int) (Math.pow(2,height)-1);
-	    } else {
+      } else {
         for (i = 0; i < height; i++) {
           if ((tally & 1) == 1)
             memory.set(address + i, true);
@@ -166,8 +166,8 @@ public class TOMB implements ICounterContainer {
             memory.set(address + i, false);
           tally = tally >> 1;
         }
-	    }
-	    d++;
+      }
+      d++;
     }
     return false; // for compat
   }
@@ -180,7 +180,7 @@ public class TOMB implements ICounterContainer {
   public boolean increment (String key, int value) {
     boolean result = false;
     for (int i = 0; i < value; i++)
-	    result = result || this.increment(key);
+      result = result || this.increment(key);
     return result;
   }
 
@@ -203,13 +203,13 @@ public class TOMB implements ICounterContainer {
 
     // Set d to last partial layer, and cell to that layer's tally.
     while ((d < depth) && (! done)) {
-	    //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
-	    address = ((int)(Hash.hash(key,salts[d], height*width)));
-	    cell = memory.get(address, address + height);
-	    if (cell.cardinality() == height) {
+      //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
+      address = ((int)(Hash.hash(key,salts[d], height*width)));
+      cell = memory.get(address, address + height);
+      if (cell.cardinality() == height) {
         d++;
         tally += ((int) Math.pow(2,height)) -1;
-	    } else {
+      } else {
         done = true;
         i = cell.nextSetBit(0);
         while (i != -1) {
@@ -217,29 +217,28 @@ public class TOMB implements ICounterContainer {
           i = cell.nextSetBit(i+1);
         }
         tally += cellTally;
-	    }
+      }
 
-
-	    // Incremental check of coinFlip is an efficiency trick
-	    // due to David Talbot (p.c.)
-	    if ((d == depth) ||
+      // Incremental check of coinFlip is an efficiency trick
+      // due to David Talbot (p.c.)
+      if ((d == depth) ||
           (tally > 0 && coinFlip > 1.0/(invertedCodebook[tally] - invertedCodebook[tally-1])))
         return false;
     }
 
     if (cell.cardinality() == height) {
-	    address = ((int)(Hash.hash(key,salts[d], height*width)));
-	    //address = ((int) (Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
-	    memory.set(address,true);
+      address = ((int)(Hash.hash(key,salts[d], height*width)));
+      //address = ((int) (Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
+      memory.set(address,true);
     } else {
-	    cellTally = cellTally + 1;
-	    for (i = 0; i < height; i++) {
+      cellTally = cellTally + 1;
+      for (i = 0; i < height; i++) {
         if ((cellTally & 1) == 1)
           memory.set(address+i,true);
         else
           memory.set(address+i,false);
         cellTally = cellTally >> 1;
-	    }
+      }
     }
     return true;
   }
@@ -253,26 +252,26 @@ public class TOMB implements ICounterContainer {
     int i;
 
     while ((d < depth) && (! done)) {
-	    address = ((int)(Hash.hash(key,salts[d], width * height)));
-	    //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
-	    cell = memory.get(address, address + height);
-	    if (cell.cardinality() == height) {
+      address = ((int)(Hash.hash(key,salts[d], width * height)));
+      //address = ((int)(Math.abs((hashCode * Math.pow(13,d))) % width)) * height;
+      cell = memory.get(address, address + height);
+      if (cell.cardinality() == height) {
         tally += (int) Math.pow(2,height) -1;
         d++;
-	    } else {
+      } else {
         done = true;
         i = cell.nextSetBit(0);
         while (i != -1) {
           tally += 1 << i;
           i = cell.nextSetBit(i+1);
         }
-	    }
+      }
     }
 
     if (tally == 0)
-	    return 0;
+      return 0;
     else
-	    return invertedCodebook[tally-1];
+      return invertedCodebook[tally-1];
   }
 
   public int NumberSeen() {
@@ -290,23 +289,22 @@ public class TOMB implements ICounterContainer {
     //System.out.println(Integer.decode(args[0]) + " " + tomb.Get("dog"));
 
     for (int i = 0; i < 50000; i++) {
-	    if (tomb.increment("dog")) {
+      if (tomb.increment("dog")) {
         //System.out.println((i+1) + " " + tomb.Get("dog") + " " + "card: " + tomb.memory.cardinality());
         value = tomb.get("dog");
         System.out.println((i+1) + " " + value);// + " " + Math.abs(i + 1 - value)/i);
-	    }
+      }
     }
 
     ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("/tmp/test.tomb"));
     out.writeObject(tomb);
     out.close();
-	
+
     ObjectInputStream in = new ObjectInputStream(new FileInputStream("/tmp/test.tomb"));
     TOMB tomb2 = (TOMB) in.readObject();
     in.close();
 
     System.out.println(tomb2.get("dog"));
-    	
   }
 
   // TODO: implement these instead of the Serialization versions
@@ -323,6 +321,4 @@ public class TOMB implements ICounterContainer {
   public void write () throws Exception {
     throw new Exception("Not supported");
   }
-
-
 }
